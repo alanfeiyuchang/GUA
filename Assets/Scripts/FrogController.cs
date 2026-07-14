@@ -25,6 +25,8 @@ public class FrogController : MonoBehaviour
     public float spitForce = 12f;
     public float swallowCooldown = 0.5f;
     public float swallowedScaleFactor = 0.6f;
+    [Tooltip("How long after being spit out a frog's own movement input is suppressed, so the spit's launch velocity actually carries it instead of being overwritten by idle/zero input on the very next frame.")]
+    public float launchMomentumDuration = 0.3f;
 
     [Header("Tongue")]
     public Transform tonguePivot;
@@ -67,6 +69,7 @@ public class FrogController : MonoBehaviour
     int baseSortingOrder;
     Vector2 lastSafePosition;
     float invulnerableUntil = -1f;
+    float launchControlLockUntil = -1f;
 
     void Awake()
     {
@@ -102,7 +105,11 @@ public class FrogController : MonoBehaviour
         if (Mathf.Abs(horizontal) > 0.01f)
             SetFacing(Mathf.Sign(horizontal));
 
-        rb.linearVelocityX = horizontal * moveSpeed;
+        // Skip while a just-spit launch is still carrying the frog — otherwise this
+        // line overwrites the spit's horizontal velocity with (idle) input on the
+        // very next frame, killing all horizontal momentum instantly.
+        if (Time.time >= launchControlLockUntil)
+            rb.linearVelocityX = horizontal * moveSpeed;
 
         bool grounded = groundCheck != null &&
             Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
@@ -326,6 +333,7 @@ public class FrogController : MonoBehaviour
             launched.rb.simulated = true;
             launched.rb.linearVelocity = dir * spitForce;
             launched.invulnerableUntil = Time.time + swallowCooldown;
+            launched.launchControlLockUntil = Time.time + launchMomentumDuration;
         }
 
         swallowedFrogs.Clear();
