@@ -317,7 +317,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 1, y: 1.1888889}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -374,8 +374,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 21300000, guid: 5777ecab9d4e045cc951f2a8d0c94a4d, type: 3}
-  m_Color: {r: 0.2, g: 0.75, b: 0.3, a: 1}
+  m_Sprite: {fileID: 21300000, guid: 9920f566e9af04dd29b58fecb28ff5fd, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -409,7 +409,6 @@ MonoBehaviour:
   mouthPivot: {fileID: 8666461025816362246}
   spitForce: 20
   swallowCooldown: 0.5
-  minStompFallSpeed: 0.5
   swallowedScaleFactor: 0.6
   tonguePivot: {fileID: 6604118613500604047}
   tongueVisual: {fileID: 1171962597529241306}
@@ -417,9 +416,10 @@ MonoBehaviour:
   growthPerSwallow: 0.12
   aimStickDeadzone: 0.2
   maxTongueAngle: 55
+  maxDownwardTongueAngle: 50
   tongueArtRestAngle: 37.05
-  closeMouthSprite: {fileID: 0}
-  openMouthSprite: {fileID: 0}
+  closeMouthSprite: {fileID: 21300000, guid: 9920f566e9af04dd29b58fecb28ff5fd, type: 3}
+  openMouthSprite: {fileID: 21300000, guid: c56398f5078674d838d2f0b5a764a84e, type: 3}
   wallCheckDistance: 0.5
   wallSlideSpeed: -1.5
   fallDeathY: -6

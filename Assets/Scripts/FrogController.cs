@@ -32,8 +32,10 @@ public class FrogController : MonoBehaviour
     public float swallowHopForce = 3f;
     public float growthPerSwallow = 0.12f;
     public float aimStickDeadzone = 0.2f;
-    [Tooltip("Max upward angle (degrees) the tongue can aim, measured from horizontal on the facing side. 0 = can't dip below horizontal.")]
+    [Tooltip("Max upward angle (degrees) the tongue can aim, measured from horizontal on the facing side.")]
     public float maxTongueAngle = 40f;
+    [Tooltip("Max downward angle (degrees) the tongue can aim, measured from horizontal on the facing side.")]
+    public float maxDownwardTongueAngle = 35f;
     [Tooltip("The tongue artwork's own inherent diagonal tilt (degrees) baked into its pixels, measured from horizontal.")]
     public float tongueArtRestAngle = 37.05f;
 
@@ -52,9 +54,11 @@ public class FrogController : MonoBehaviour
     Rigidbody2D rb;
     SpriteRenderer sr;
     Collider2D col;
+    SpriteRenderer tongueVisualRenderer;
     FrogState state = FrogState.Normal;
     readonly List<FrogController> swallowedFrogs = new List<FrogController>();
     Vector2 aimDirection = Vector2.right;
+    Vector2 launchDirection = Vector2.right;
     bool tongueHeld;
     float facing = 1f;
     float mouthPivotBaseX;
@@ -74,8 +78,18 @@ public class FrogController : MonoBehaviour
         lastSafePosition = transform.position;
         if (groundLayer.value == 0) groundLayer = LayerMask.GetMask("Ground");
         if (mouthPivot != null) mouthPivotBaseX = mouthPivot.localPosition.x;
-        if (tongueVisual != null) tongueVisualBaseScale = tongueVisual.localScale;
-        if (sr != null && closeMouthSprite != null) sr.sprite = closeMouthSprite;
+        if (tongueVisual != null)
+        {
+            tongueVisualBaseScale = tongueVisual.localScale;
+            tongueVisualRenderer = tongueVisual.GetComponent<SpriteRenderer>();
+        }
+        // Sprites are pre-colored art — force white so no leftover prefab tint
+        // (e.g. from an early placeholder) multiplies into the actual sprite colors.
+        if (sr != null)
+        {
+            sr.color = Color.white;
+            if (closeMouthSprite != null) sr.sprite = closeMouthSprite;
+        }
         SetTongueActive(false);
     }
 
@@ -100,6 +114,11 @@ public class FrogController : MonoBehaviour
             lastSafePosition = transform.position;
             if (sr != null) sr.sortingOrder = baseSortingOrder;
         }
+
+        // Keep the tongue rendering behind this frog's own body, always relative to
+        // whatever the body's current sortingOrder is (base, or lowered after a spit).
+        if (tongueVisualRenderer != null && sr != null)
+            tongueVisualRenderer.sortingOrder = sr.sortingOrder - 1;
 
         ApplyWallSlide(horizontal, grounded);
 
@@ -181,10 +200,15 @@ public class FrogController : MonoBehaviour
 
         float facingRelativeX = aimDirection.x * side;
         float aimAngle = Mathf.Atan2(aimDirection.y, facingRelativeX) * Mathf.Rad2Deg;
-        float clampedAngle = Mathf.Clamp(aimAngle, 0f, maxTongueAngle);
+        float clampedAngle = Mathf.Clamp(aimAngle, -maxDownwardTongueAngle, maxTongueAngle);
         float worldAngle = side > 0f ? clampedAngle : 180f - clampedAngle;
 
         tonguePivot.rotation = Quaternion.Euler(0f, 0f, worldAngle);
+
+        // Cache the actual clamped/mirrored direction so Spit() launches frogs exactly
+        // where the tongue visually points, instead of the raw (unclamped) aim input.
+        float worldAngleRad = worldAngle * Mathf.Deg2Rad;
+        launchDirection = new Vector2(Mathf.Cos(worldAngleRad), Mathf.Sin(worldAngleRad));
 
         if (tongueVisual != null)
         {
@@ -281,7 +305,7 @@ public class FrogController : MonoBehaviour
         if (swallowedFrogs.Count == 0) return;
 
         Transform anchor = mouthPivot != null ? mouthPivot : transform;
-        Vector2 dir = aimDirection;
+        Vector2 dir = launchDirection;
 
         for (int i = 0; i < swallowedFrogs.Count; i++)
         {

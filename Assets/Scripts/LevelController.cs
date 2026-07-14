@@ -47,6 +47,10 @@ public class LevelController : MonoBehaviour
     {
         if (transitioning) return;
 
+        // Defends against GameManager.Instance being wiped by a domain reload
+        // (e.g. scripts recompiling while still in Play mode).
+        if (GameManager.Instance == null) GameManager.EnsureExists();
+
         if (isHomeLobby)
             HandleJoining();
 
