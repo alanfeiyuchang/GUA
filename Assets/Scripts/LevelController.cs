@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class LevelController : MonoBehaviour
 {
     [Header("Setup")]
-    [Tooltip("If true, unjoined players can press a button to join and spawn here (lobby). If false, everyone already joined just spawns immediately.")]
+    [Tooltip("If true, this scene does NOT auto-spawn already-joined players on load (they must press join, as in the home lobby) and the end zone requires minPlayersToStart. If false, everyone already joined spawns immediately on load. Joining mid-scene is always allowed in both cases, capped at 4.")]
     public bool isHomeLobby = false;
     [Tooltip("Minimum joined players required before the end zone can trigger a level start (only enforced in the lobby).")]
     public int minPlayersToStart = 2;
@@ -51,8 +51,10 @@ public class LevelController : MonoBehaviour
         // (e.g. scripts recompiling while still in Play mode).
         if (GameManager.Instance == null) GameManager.EnsureExists();
 
-        if (isHomeLobby)
-            HandleJoining();
+        // Allow joining in every scene, not just the home lobby, so a new
+        // controller can drop in mid-level. Capped at 4 automatically since
+        // HandleJoining only fills the 4 fixed player slots (0-3).
+        HandleJoining();
 
         CheckEndZone();
     }

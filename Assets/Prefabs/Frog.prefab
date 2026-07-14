@@ -407,16 +407,17 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 0
   mouthPivot: {fileID: 8666461025816362246}
-  spitForce: 20
+  spitForce: 10
   swallowCooldown: 0.5
   swallowedScaleFactor: 0.6
+  launchMomentumDuration: 0.3
   tonguePivot: {fileID: 6604118613500604047}
   tongueVisual: {fileID: 1171962597529241306}
   swallowHopForce: 3
   growthPerSwallow: 0.12
   aimStickDeadzone: 0.2
-  maxTongueAngle: 55
-  maxDownwardTongueAngle: 50
+  maxTongueAngle: 45
+  maxDownwardTongueAngle: 45
   tongueArtRestAngle: 37.05
   closeMouthSprite: {fileID: 21300000, guid: 9920f566e9af04dd29b58fecb28ff5fd, type: 3}
   openMouthSprite: {fileID: 21300000, guid: c56398f5078674d838d2f0b5a764a84e, type: 3}

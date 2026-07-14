@@ -48,6 +48,8 @@ public class FrogController : MonoBehaviour
     [Header("Wall Cling")]
     public float wallCheckDistance = 0.5f;
     public float wallSlideSpeed = -1.5f;
+    [Tooltip("Only cling to a hit collider whose own height is at least this tall — excludes thin platform edges (which should just be jumped onto, not stuck against) while still catching genuine tall walls.")]
+    public float minWallHeight = 2f;
 
     [Header("Fall / Respawn")]
     public float fallDeathY = -6f;
@@ -156,9 +158,13 @@ public class FrogController : MonoBehaviour
         if (rb.linearVelocityY >= wallSlideSpeed) return;
 
         float dir = Mathf.Sign(horizontal);
-        bool touchingWall = Physics2D.Raycast(transform.position, new Vector2(dir, 0f), wallCheckDistance, groundLayer);
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, new Vector2(dir, 0f), wallCheckDistance, groundLayer);
 
-        if (touchingWall)
+        // Only cling to genuinely tall obstacles. A thin platform edge (the usual
+        // case here, since levels have no dedicated wall objects) would otherwise
+        // register the same as a wall, gluing a jumping frog to its side instead
+        // of letting it land on top or fall past normally.
+        if (hit.collider != null && hit.collider.bounds.size.y >= minWallHeight)
             rb.linearVelocityY = wallSlideSpeed;
     }
 
@@ -348,6 +354,7 @@ public class FrogController : MonoBehaviour
         if (other == null || other == this) return;
         if (other.state != FrogState.Normal) return;
         if (Time.time < other.invulnerableUntil) return;
+        if (swallowedFrogs.Count >= 1) return; // only one frog in belly at a time
 
         Swallow(other);
     }
